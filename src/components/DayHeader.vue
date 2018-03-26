@@ -1,15 +1,47 @@
 <template>
   <header class="days-header">
-    <div class="days-header__arrow days-header__arrow--left"></div>
-    <div class="days-header__name">{{nameMonth}}</div>
-    <div class="days-header__arrow days-header__arrow--right"></div>
+    <div class="days-header__arrow days-header__arrow--left" v-on:click="prevDays"></div>
+    <div class="days-header__name">{{dataForHeader.nameOfMonth}}</div>
+    <div class="days-header__arrow days-header__arrow--right" v-on:click="nextDays"></div>
   </header>
 </template>
 <script>
 
 export default {
   name: 'DaysHeader',
-  props: ['nameMonth']
+  props: ['dataForHeader'],
+  data () {
+    return {
+      dayFrom: 0,
+      dayTo: 5
+    }
+  },
+  methods: {
+    prevDays: function() {
+      this.dayFrom = this.dataForHeader.dayFrom - 5;
+      this.dayTo = this.dataForHeader.dayTo - 5;
+
+      if(this.dayFrom < 0) {
+        this.dayTo = this.dataForHeader.keysStartDatelength;
+        this.dayFrom = this.dataForHeader.keysStartDatelength - 5;
+      }
+
+      this.$emit('changeday', this.dayFrom, this.dayTo);
+    },
+
+    nextDays: function() {
+
+      this.dayFrom = this.dataForHeader.dayFrom + 5;
+      this.dayTo = this.dataForHeader.dayTo + 5;
+
+      if(this.dayTo > this.dataForHeader.keysStartDatelength) {
+        this.dayFrom = 0;
+        this.dayTo = 5;
+      }
+
+      this.$emit('changeday', this.dayFrom, this.dayTo);
+    }
+  }
 }
 </script>
 
