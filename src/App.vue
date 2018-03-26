@@ -24,33 +24,9 @@
         </div>
       </div>
       <div class="form-right">
-        <DayHeader v-bind:name-month="nameOfMonth"></DayHeader>
-        <Days v-bind:day-render="dayRender"></Days>
+        <DayHeader v-bind:data-for-header="dataForHeader" v-on:changeday="changeDay"></DayHeader>
+        <Days v-bind:day-render="dayRender" v-on:changevalueroom="changeValueRoom"></Days>
       </div>
-      <!--<div class="form-right">
-        <header class="days-header">
-          <div class="days-header__arrow days-header__arrow--left"></div>
-            <div class="days-header__name">Апрель</div>
-          <div class="days-header__arrow days-header__arrow--right"></div>
-        </header>
-        <div class="days">
-          <div class="day">
-            <div class="day__name">10 Понедельник</div>
-            <div class="day__room">
-              <div class="day__time">09:00</div>
-              <div class="day__time">10:00</div>
-              <div class="day__time">11:00</div>
-              <div class="day__time">12:00</div>
-              <div class="day__time">13:00</div>
-              <div class="day__time">14:00</div>
-              <div class="day__time">15:00</div>
-              <div class="day__time">16:00</div>
-              <div class="day__time">17:00</div>
-              <div class="day__time">18:00</div>
-            </div>
-          </div>
-        </div>
-      </div>-->
     </div>
   </div>
 </template>
@@ -59,29 +35,40 @@
 
 let startDate = {
   Апрель: {
+    "01 Воскресенье": {},
     "02 Понедельник": {},
     "03 Вторник": {},
     "04 Среда": {},
     "05 Четверг": {},
     "06 Пятница": {},
+    "07 Суббота": {},
+    "08 Воскресенье": {},
     "09 Понедельник": {},
     "10 Вторник": {},
     "11 Среда": {},
     "12 Четверг": {},
     "13 Пятница": {},
+    "14 Суббота": {},
+    "15 Воскресенье": {},
     "16 Понедельник": {},
     "17 Вторник": {},
     "18 Среда": {},
     "19 Четверг": {},
-    "20 Понедельник": {},
-    "23 Пятница": {},
+    "20 Пятница": {},
+    "21 Суббота": {},
+    "22 Воскресенье": {},
+    "23 Понедельник": {},
     "24 Вторник": {},
     "25 Среда": {},
     "26 Четверг": {},
     "27 Пятница": {},
     "28 Суббота": {},
+    "29 Воскресенье": {},
+    "30 Понедельник": {}
   }
 }
+
+//СДЕЛАТЬ ОБЪЕКТ С ДАТАМИ ДЛИННОЙ ЧТОБ ОНА ДЕЛИЛАСЬ БЕЗ ОСТАТКА НА 5, ПРИ ЛЮБЫХ ВХОДНЫХ ДАННЫХ
 
 let startColorRooms = {
   Зеленая: {},
@@ -118,15 +105,20 @@ export default {
       startDate: startDate,
       dayRender: [],
       keysStartDate: [],
-      indexWeek: Number,
-      nameOfMonth: ""
+      dataForHeader: {
+        dayFrom: 0,
+        dayTo: 5,
+        nameOfMonth: "",
+        keysStartDatelength: Number
+      },
+      wayToData: {}
     }
   },
 
   created: function() {
     this.createRoomTime;
     this.createSchedule;
-    this.startDaysRender;
+    this.renderDays;
     this.startRenderDate();
   },
 
@@ -140,9 +132,11 @@ export default {
     createSchedule: function() {
       
       for (let key in this.startDate) {
+
         this.keysStartDate = Object.keys(this.startDate[key]);
 
-        this.nameOfMonth = key;
+        this.dataForHeader.keysStartDatelength = this.keysStartDate.length;
+        this.dataForHeader.nameOfMonth = key;
 
         for (let key in this.startDate) {
           let lastObj = this.startDate[key];
@@ -155,12 +149,11 @@ export default {
       
     },
 
-    startDaysRender: function() {
-      this.indexWeek = 0;
+    renderDays: function() {
       let monthForRender = {};
-      let indexForRenderArr = this.keysStartDate.slice(this.indexWeek, 5);
+      let indexForRenderArr = this.keysStartDate.slice(this.dataForHeader.dayFrom, this.dataForHeader.dayTo);
 
-     // console.log(this.startDate.key);
+      this.dayRender = [];
 
       for (let key in this.startDate) {
         monthForRender = this.startDate[key];
@@ -168,8 +161,8 @@ export default {
 
       for (let i = 0; i < indexForRenderArr.length; i++){
         for (let days in monthForRender) {
-          if(indexForRenderArr[i] === days) {
-            this.dayRender.push(monthForRender[days]);
+          if (indexForRenderArr[i] === days) {
+            this.dayRender.push([indexForRenderArr[i], monthForRender[days]]);
           }
         }
       }
@@ -179,6 +172,48 @@ export default {
   methods: {
     startRenderDate: function() {
      // console.log(this.dayRender);
+    },
+
+    changeDay: function(dayFrom, dayTo) {
+
+      this.dataForHeader.dayFrom = dayFrom;
+      this.dataForHeader.dayTo = dayTo;
+
+      this.renderDays;
+    },
+
+    changeValueRoom: function(way) {
+      let wayArr = way.split(',');
+
+      this.wayToData.time = wayArr[0];
+      this.wayToData.color = wayArr[1];
+      this.wayToData.day = wayArr[2];
+
+      this.changeStateOfRoom(this.wayToData.day, this.wayToData.color, this.wayToData.time);
+    },
+
+    changeStateOfRoom: function(day, color, time) {
+      for (let day in this.startDate) {
+        let ourDayObj = this.startDate[day];
+        for (let dayInMonth in ourDayObj) {
+          if (dayInMonth === this.wayToData.day) {
+            let objOurDay = ourDayObj[dayInMonth];
+            for (let color in objOurDay) {
+              if (color === this.wayToData.color) {
+                let timeInRomm = objOurDay[color];
+                for (let time in timeInRomm) {
+                  if (time === this.wayToData.time) {
+                    timeInRomm[time] = "false";
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+
+     console.log(this.startDate);
+
     }
   }
 }
@@ -191,6 +226,7 @@ body {
   margin: 0 auto;
   font-family: sans-serif;
   color: #333333;
+  box-sizing: border-box;
 }
 
 #app {
@@ -231,9 +267,11 @@ h1 {
   margin: 0 0 10px 0;
   padding: 15px;
   border: 1px solid #eaeaea;
+  box-sizing: border-box;
 }
 
 .form-left__cell--top {
+  height: 75px;
   border: none;
 }
 
@@ -241,53 +279,7 @@ h1 {
   width: 75%;
 }
 
-.days {
-  display: flex;
-  justify-content: space-between;
-}
 
-.day {
-  width: 20%;
-}
-
-.day__name {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 75px;
-  font-size: 15px;
-}
-
-.day__room {
-  display: flex;
-  flex-wrap: wrap;
-  height: 100px;
-  margin: 0 0 10px 0;
-  border: 1px solid #eaeaea;
-  border-left: none;
-}
-
-.day__time {
-  display: flex;
-  align-items: center;
-  width: 50%;
-  padding: 0px 5px;
-  font-size: 12px;
-  position: relative;
-  cursor: pointer;
-}
-
-.day__time:after {
-  content: "+";
-  position: absolute;
-  top: -2px;
-  right: 20px;
-  font-size: 14px;
-}
-
-.day__time:hover {
-  background-color: #f6f6f6;
-}
 
 
 </style>
